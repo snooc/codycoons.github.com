@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Ruby on Rails | Rural Development]]></title>
+  <link href="http://codycoons.github.com/blog/categories/ruby-on-rails/atom.xml" rel="self"/>
+  <link href="http://codycoons.github.com/"/>
+  <updated>2012-12-10T17:24:42-05:00</updated>
+  <id>http://codycoons.github.com/</id>
+  <author>
+    <name><![CDATA[Cody Coons]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Carrierwave configuration based on users]]></title>
+    <link href="http://codycoons.github.com/blog/2012/12/10/carrierwave-configuration-based-on-users/"/>
+    <updated>2012-12-10T16:54:00-05:00</updated>
+    <id>http://codycoons.github.com/blog/2012/12/10/carrierwave-configuration-based-on-users</id>
+    <content type="html"><![CDATA[<p>So, you have an multitenant application that allows users to upload files, which are tied to their accounts. The users own these files, so, they should not be sitting in on large bucket with everyone else's files. The files should be by themselves.</p>
+
+<p>Carrierwave removes many of the complications involved with dealing with file uploads in rails, from thumbnails, to extension whitelisting, it has you covered.</p>
+
+<p>We have one problem, though. Their documentation only shows how to configure settings inside of a Rails initializer. This does not allow us to have user configurable settings. The application has to be restarted to alter any setting. This is possible, though. To quote the documentation, "CarrierWave has a broad range of configuration options, which you can configure, both globally and on a <strong>per-uploader basis</strong>"</p>
+
+<p>So, how do we do this? Simple. All carrierwave configureation options are methods within the uploader object:</p>
+
+<p>``` ruby lib/carrierwave/uploader/configuration.rb
+module CarrierWave
+  module Uploader</p>
+
+<pre><code>module Configuration
+  extend ActiveSupport::Concern
+
+  included do
+    class_attribute :_storage, :instance_writer =&gt; false
+
+    add_config :root
+    add_config :base_path
+    add_config :asset_host
+    add_config :permissions
+    add_config :directory_permissions
+    # ...
+
+    # fog
+    add_config :fog_attributes
+    add_config :fog_credentials
+    add_config :fog_directory
+    add_config :fog_endpoint
+    add_config :fog_public
+    add_config :fog_authenticated_url_expiration
+
+    # ...
+</code></pre>
+
+<p>```
+<a href="https://github.com/jnicklas/carrierwave/blob/master/lib/carrierwave/uploader/configuration.rb">lib/carrierwave/uploader/configuration.rb</a></p>
+
+<p>We can then see where each option's methods are being created.</p>
+
+<p>``` ruby lib/carrierwave/uploader/configuration.rb:79
+def add_config(name)
+  class_eval &lt;&lt;-RUBY, <strong>FILE</strong>, <strong>LINE</strong> + 1</p>
+
+<pre><code>def self.#{name}(value=nil)
+  @#{name} = value if value
+  return @#{name} if self.object_id == #{self.object_id} || defined?(@#{name})
+  name = superclass.#{name}
+  return nil if name.nil? &amp;&amp; !instance_variable_defined?("@#{name}")
+  @#{name} = name &amp;&amp; !name.is_a?(Module) &amp;&amp; !name.is_a?(Symbol) &amp;&amp; !name.is_a?(Numeric) &amp;&amp; !name.is_a?(TrueClass) &amp;&amp; !name.is_a?(FalseClass) ? name.dup : name
+end
+
+def self.#{name}=(value)
+  @#{name} = value
+end
+
+def #{name}=(value)
+  @#{name} = value
+end
+
+def #{name}
+  value = @#{name} if instance_variable_defined?(:@#{name})
+  value = self.class.#{name} unless instance_variable_defined?(:@#{name})
+  value.instance_of?(Proc) ? value.call : value
+end
+</code></pre>
+
+<p>  RUBY
+end
+```
+<a href="https://github.com/jnicklas/carrierwave/blob/master/lib/carrierwave/uploader/configuration.rb#L79">lib/carrierwave/uploader/configuration.rb Line 79</a></p>
+
+<p>Talk aside, lets build a simple uploader class that pulls the settings from our user class.</p>
+
+<blockquote><p>This example assumes that the resource <code>belongs_to :user</code>.</p></blockquote>
+
+<p>``` ruby app/uploaders/resource_uploader.rb
+class ResourceUploader &lt; CarrierWave::Uploader::Base
+  storage :fog</p>
+
+<p>  # Override configuration
+  def fog_credentials</p>
+
+<pre><code>{
+  provider: 'Rackspace',
+  rackspace_username: model.owner.cloudfiles_username,
+  rackspace_api_key: model.owner.cloudfiles_apikey
+}
+</code></pre>
+
+<p>  end</p>
+
+<p>  def fog_directory</p>
+
+<pre><code>model.owner.rackspace_container_name
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<p>The object <code>model</code> will give you access to the model inwhich the uploader is mounted within.</p>
+
+<p>I hope this helps anyone who is just begining to dive down this road. I will provide more details on this as my code utilizing this concept matures.</p>
+]]></content>
+  </entry>
+  
+</feed>
