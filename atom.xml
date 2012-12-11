@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Rural Development]]></title>
-  <link href="http://codycoons.github.com/atom.xml" rel="self"/>
-  <link href="http://codycoons.github.com/"/>
-  <updated>2012-12-10T17:28:56-05:00</updated>
-  <id>http://codycoons.github.com/</id>
+  <link href="http://codycoons.com/atom.xml" rel="self"/>
+  <link href="http://codycoons.com/"/>
+  <updated>2012-12-11T10:03:56-05:00</updated>
+  <id>http://codycoons.com/</id>
   <author>
     <name><![CDATA[Cody Coons]]></name>
     
@@ -15,9 +15,9 @@
   
   <entry>
     <title type="html"><![CDATA[Carrierwave configuration based on users]]></title>
-    <link href="http://codycoons.github.com/blog/2012/12/10/carrierwave-configuration-based-on-users/"/>
+    <link href="http://codycoons.com/blog/2012/12/10/carrierwave-configuration-based-on-users/"/>
     <updated>2012-12-10T16:54:00-05:00</updated>
-    <id>http://codycoons.github.com/blog/2012/12/10/carrierwave-configuration-based-on-users</id>
+    <id>http://codycoons.com/blog/2012/12/10/carrierwave-configuration-based-on-users</id>
     <content type="html"><![CDATA[<p>So, you have an multitenant application that allows users to upload files, which are tied to their accounts. The users own these files, so, they should not be sitting in on large bucket with everyone else&#8217;s files. The files should be by themselves.</p>
 
 <p>Carrierwave removes many of the complications involved with dealing with file uploads in rails, from thumbnails, to extension whitelisting, it has you covered.</p>
